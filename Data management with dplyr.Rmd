@@ -1,0 +1,82 @@
+---
+title: "Data management using dplyr in R programing"
+author: "Charles NIZEYIMANA"
+date: "2026-10-26"
+output: html_document
+---
+
+## Creating an example dataset
+#Suppose we have  information about 10 students.
+```{r}
+Students<-data.frame(
+  
+  ID=1:10,
+  
+  Name=c("David","James","Divine","Jane","Kabayiza","Diane","Anitha","Nadia",
+    "Keza","Johnson","Alice","John","Peter","Mary","Charles","Grace","Elia",
+    "Elissa", "Aline","Arteta"),
+  Sex= c("M","M","F","F","M","F","F","F","F","M","F","M","M","F","M","F","M",
+  "M","F","M"),
+  Age=c(19,20,21,18,25,30,29,20,25,40,50,19,20,21,27,25,33,34,32,20),
+  Ass_Marks=c(1,27,29,11,18,19,26,21,22,20,28,25,23,17,30,13,15,24,21,22)
+)
+Students
+```
+#Creating other variables and add them in the dataset
+#create first the variable list you want to include 
+```{r}
+library(dplyr)
+Quiz_score=c(8,9,10,10,6,7,5,4,7,8,9,10,9,8,9,10,10,6,7,5)
+Exam_score=c(29,12,18,30,35,38,37,39,33,32,31,24,30,22,21,7,36,36,20,17)
+Students_scores <- Students %>% 
+mutate(Quiz=Quiz_score,
+       Exam=Exam_score,
+       Total_score=Ass_Marks+Quiz_score+Exam_score)
+  
+Students_scores 
+```
+#Selecting Students aged 20years and above whose total score is at least 50marks
+```{r}
+library(dplyr)
+Students1 <-Students_scores %>%
+ filter(Age>=20,Total_score>=50)
+Students1
+```
+#Inspecting the Students1.
+```{r}
+Grade_students <- Students_scores %>%
+mutate(result=if_else(Total_score>=50,
+                      'Pass','Fail'))
+Grade_students
+```
+```{r}
+library(dplyr)
+nrow(Grade_students)
+```
+```{r}
+Grade_students %>%
+count(result)
+```
+```{r}
+#Counting the number of Male and Female(frequency)
+library(dplyr)
+Grade_students %>%
+count(Sex) 
+```
+```{r}
+"ggplot2" %in% rownames(installed.packages())
+```
+
+
+
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
