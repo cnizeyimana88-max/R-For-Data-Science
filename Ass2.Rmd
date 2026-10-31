@@ -1,0 +1,345 @@
+---
+title: "Assignmet2: ploting different graphs in R"
+author: "Charles NIZEYIMANA"
+ID: "20252MBI044"
+date: "2026-10-31"
+output: html_document
+---
+
+```{r}
+
+# Load packages
+library(haven)
+library(dplyr)
+library(ggplot2)
+
+# Import your DHS PR file
+pr <- read_dta("D:/My Document Classes/RWPR81FL.DTA")
+
+# Examine the data
+glimpse(pr)
+names(pr)
+```
+```{r}
+# Prepare the variables for plotting
+pr_clean <- pr %>%
+  mutate(
+    age = if_else(hv105 <= 97, as.numeric(hv105), NA_real_),
+
+    sex = factor(
+      as.numeric(hv104),
+      levels = c(1, 2),
+      labels = c("Male", "Female")
+    ),
+
+    residence = factor(
+      as.numeric(hv025),
+      levels = c(1, 2),
+      labels = c("Urban", "Rural")
+    ),
+
+    wealth = factor(
+      as.numeric(hv270),
+      levels = 1:5,
+      labels = c("Poorest", "Poorer", "Middle",
+                 "Richer", "Richest")
+    ),
+
+    education = factor(
+      as.numeric(hv106),
+      levels = c(0, 1, 2, 3),
+      labels = c("No education", "Primary",
+                 "Secondary", "Higher")
+    ),
+
+    years_schooling = if_else(
+      hv108 <= 90,
+      as.numeric(hv108),
+      NA_real_
+    ),
+
+    weight = as.numeric(hv005) / 1000000
+  )
+```
+```{r}
+# geom_bar() — Bar chart
+# geom_bar() automatically counts the observations in each category
+# Objective: Show the number of household members by sex.
+
+pr_clean %>%
+  ggplot(aes(x = sex, fill = sex)) +
+  geom_bar() +
+  labs(
+    title = "Geom_Bar of Household Members by Sex",
+    x = "Sex",
+    y = "Number of Members"
+  ) +
+  theme_minimal()
+```
+```{r}
+# geom_boxplot()/Box plot
+# for Comparing the distribution of age between urban and rural residents.
+# A box plot displays the median, quartiles, and potential outliers.
+pr_clean %>%
+  filter(!is.na(age)) %>%
+  ggplot(aes(x = residence, y = age,
+             fill = residence)) +
+  geom_boxplot() +
+  labs(
+    title = "Geom_boxplot of Age Distribution by Residence",
+    x = "Residence",
+    y = "Age in Years"
+  ) +
+  theme_minimal()
+```
+```{r}
+#geom_density() — Density plot to show smooth representation of a numerical//
+#variable's distribution
+#Compare age distributions between males and females
+
+
+pr_clean %>%
+  filter(!is.na(age)) %>%
+  ggplot(aes(x = age, fill = sex,
+             color = sex)) +
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Age Density by Sex",
+    x = "Age in Years",
+    y = "Density"
+  ) +
+  theme_minimal()
+```
+```{r}
+# geom_histogram() — Histogram to examine the shape of age distribution of 
+# household members.
+pr_clean %>%
+  filter(!is.na(age)) %>%
+  ggplot(aes(x = age)) +
+  geom_histogram(
+    binwidth = 5,     # 5 age groups into intervals of five years
+    fill = "steelblue",
+    color = "white"
+  ) +
+  labs(
+    title = "Geom_histogram of Age Distribution of Household Members",
+    x = "Age in Years",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
+```{r}
+# geom_hline() /Horizontal reference line
+# Show mean years of schooling by wealth quintile, with a horizontal line representing the overall average.
+
+school_data <- pr_clean %>%
+  filter(!is.na(years_schooling), !is.na(wealth))
+
+school_summary <- school_data %>%
+  group_by(wealth) %>%
+  summarise(
+    mean_years = mean(years_schooling),
+    .groups = "drop"
+  )
+
+overall_mean <- mean(school_data$years_schooling)
+
+ggplot(school_summary,
+       aes(x = wealth, y = mean_years)) +
+  geom_col(fill = "steelblue") +
+  geom_hline(
+    yintercept = overall_mean,
+    color = "red",
+    linetype = "dashed"
+  ) +
+  
+  labs(
+    title = "Mean Years of Schooling by Wealth Quintile",
+    x = "Wealth Quintile",
+    y = "Mean Years of Schooling"
+  ) +
+  theme_minimal()
+```
+```{r}
+# Geom_jitter()/ Jitter plot for testing relationship btn age and years of schooling
+
+pr_clean %>%
+  filter(!is.na(age),
+         !is.na(years_schooling)) %>%
+  ggplot(aes(x = age, y = years_schooling)) +
+  geom_jitter(
+    width = 0.3,
+    height = 0.2,
+    alpha = 0.15,
+    color = "steelblue"
+  ) +
+  labs(
+    title = "Jitter plot of Age and Years of Schooling",
+    x = "Age in Years",
+    y = "Years of Schooling"
+  ) +
+  theme_minimal()
+```
+```{r}
+# Geom_line()/Line graph to show the # of HH members by single year of age
+# It shows how the number of members changes across ages, not over calendar time.
+
+age_summary <- pr_clean %>%
+  filter(!is.na(age)) %>%
+  count(age)
+
+ggplot(age_summary, aes(x = age, y = n)) +
+  geom_line(color = "blue", linewidth = 1) +
+  labs(
+    title = "Line graph of Household Members by Age",
+    x = "Age in Years",
+    y = "Number of Members"
+  ) +
+  theme_minimal()
+```
+```{r}
+# Geom_point()/Scatter plot to displays individual observations as points.
+# The graph examines the  linear relationship between age and years of schooling.
+
+pr_clean %>%
+  filter(!is.na(age),
+         !is.na(years_schooling)) %>%
+  ggplot(aes(x = age, y = years_schooling)) +
+  geom_point(
+    color = "darkgreen",
+    alpha = 0.2
+  ) +
+  labs(
+    title = "Scattet Plot of Age and Years of Schooling",
+    x = "Age in Years",
+    y = "Years of Schooling"
+  ) +
+  theme_minimal()
+```
+```{r}
+# Geom_rug()/Rug plot
+# It Shows the distribution of ages using small marks along the horizontal axis.
+
+pr_clean %>%
+  filter(!is.na(age)) %>%
+  ggplot(aes(x = age)) +
+  geom_density(
+    fill = "lightblue",
+    alpha = 0.5
+  ) +
+  geom_rug(
+  alpha = 0.05
+  ) +
+  labs(
+    title = "Rug Plot of Age Distribution with Rug Plot",
+    x = "Age in Years",
+    y = "Density"
+  ) +
+  theme_minimal()
+```
+```{r}
+#Geom_smooth()/Smoothed trend
+ # To examine the general relationship between age and years of schooling.
+
+pr_clean %>%
+  filter(!is.na(age),
+         !is.na(years_schooling)) %>%
+  ggplot(aes(x = age, y = years_schooling)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(
+    method = "lm",   # to add a fitted linear regression line
+    color = "red"
+  ) +
+  labs(
+    title = "Smooth Plot of Relationship Between Age and Schooling",
+    x = "Age in Years",
+    y = "Years of Schooling"
+  ) +
+  theme_minimal()
+```
+```{r}
+# Geom_text() /Add data labels 
+# Display the number of household members by residence with labels above the bars.
+
+residence_summary <- pr_clean %>%
+  count(residence)
+
+ggplot(residence_summary,
+       aes(x = residence, y = n)) +
+  geom_col(fill = "steelblue") +
+  geom_text(
+    aes(label = n),
+    vjust = -.5,
+    size = 4
+  ) +
+  labs(
+    title = "Household Members by Residence",
+    x = "Residence",
+    y = "Number of Members"
+  ) +
+  theme_minimal()
+```
+```{r}
+
+# Geom_violin()/ Violin plot displays the shape of the distribution.
+# Wider sections indicates greater estimated concentration of observations.
+ # It compare the distribution of years of schooling by sex.
+pr_clean %>%
+  filter(!is.na(years_schooling)) %>%
+  ggplot(aes(x = sex,
+             y = years_schooling,
+             fill = sex)) +
+  geom_violin(trim = FALSE) +
+  geom_boxplot(
+    width = 0.1,
+    fill = "white"
+  ) +
+  labs(
+    title = "Violin of Years of Schooling by Sex",
+    x = "Sex",
+    y = "Years of Schooling"
+  ) +
+  theme_minimal()
+```
+```{r}
+# Geom_vline()/Vertical reference line
+# Display the age distribution and mark the median age.
+# he red vertical line identifies the unweighted median age.
+
+age_data <- pr_clean %>%
+  filter(!is.na(age))
+
+median_age <- median(age_data$age)
+
+ggplot(age_data, aes(x = age)) +
+  geom_histogram(
+    binwidth = 5,
+    fill = "skyblue",
+    color = "white"
+  ) +
+  geom_vline(
+    xintercept = median_age,
+    color = "red",
+    linetype = "dashed",
+    linewidth = 1
+  ) +
+  labs(
+    title = "Vline of Age Distribution with Median Age",
+    x = "Age in Years",
+    y = "Number of Members"
+  ) +
+  theme_minimal()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
