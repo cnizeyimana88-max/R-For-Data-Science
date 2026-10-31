@@ -1,0 +1,47 @@
+---
+title: "Untitled"
+author: "NIZEYIMANA Charles"
+ID: 20252MBI044
+date: "2026-10-31"
+output: html_document
+---
+```{r}
+#IMPORTING  STATA DATASET IN R
+library (haven)
+my_stata_data <- read_dta("D:/My Document Classes/RWPR81FL.DTA")
+my_stata_data
+```
+```{r}
+#Checking the number of Observation/records and variables/Attributes
+dim(my_stata_data)
+```
+```{r}
+#Importing Data from SPSS 
+library(haven)
+my_spss_data <- read_sav("D:/My Document Classes/R/Household_Recode.sav")
+my_spss_data
+```
+```{r}
+#Checking the number of records/rows/obseravtions
+length(my_spss_data)
+
+```
+```{r}
+#importing excel file
+
+# Load the package
+library(readxl)
+
+# Import the Excel file
+frame_ea <- read_excel("D:/My Document Classes/EAs_frame.xlsx")
+
+# View the data
+frame_ea
+```
+```{r}
+# Import Data from Json (API data)
+library(jsonlite)
+df <- fromJSON("https://raw.githubusercontent.com/snlwih/vscode-sas-extension.myfork/refs/heads/main/server/data/SASCallRoutines.json")
+ df
+```
+
