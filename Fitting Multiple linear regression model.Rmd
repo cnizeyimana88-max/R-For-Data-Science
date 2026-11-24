@@ -1,0 +1,165 @@
+---
+title: "Fitting multiple Regression line"
+author: "Charles NIZEYIMANA"
+date: "2026-11-10"
+output: html_document
+---
+
+ # Intrduction and loading the data
+```{r}
+
+data("mtcar")
+mtcars
+```
+# Listing the first six recordes
+```{r}
+head(mtcars)
+```
+Checking the structure of mtcar
+```{r}
+ str(mtcars)
+```
+```{r}
+# displaying the names of the varibales
+variable.names(mtcars)
+```
+# Checking the missing value if any
+
+```{r}
+library(dplyr)
+mtcars %>%
+  summarise(across(everything(), ~ sum(is.na(.x))))
+
+```
+
+```{r}
+mtcars %>%
+  is.na() %>%
+  colSums()
+```
+# Fiting the multiple regression model to study effect of the displacement,horsepower and weight  on fuel efficiency use.
+mpg = a + b(displacement) +c (hosrsepower) + d (weight)
+```{r}
+library(dplyr)
+mtcars
+mult_linear_Line <- lm(mpg~disp+hp+wt,data = mtcars)
+summary(mult_linear_Line)
+```
+# Interpretation of the model coefficient.
+# mpg= 37.105505 -0.00093*disp-0.031157*hp-3.800891*wt or
+mile per gallon = 37.105505 -0.000937*displacement-0.031157*horsepower-3.800891*weight
+#The coefficient estimates show the direction and magnitude of the relationship between each independent variable(displacement,horsepower and weight) and the dependent variable(fuel efficiency), while holding the other variables constant.
+
+# Multiple R-squared = 0.8268
+
+# This indicates that the variability in engine displacement, horsepower and vehicle weight explains the variation in fuel efficiency  at extent of 82.68% among the cars in the dataset.(there is strong relationship between the  explained and explanable variables) 
+
+# The remaining 17.32% is not explained (unexplained variation) by the model and may be associated with other factors or random variation.
+
+# Adjusted R-squared = 0.8083
+
+# The sample size and the number of explanatory variables in the model show that approximately 80.83% of the variation in MPG is explained.
+
+# Since the p values= 8.65 × 10⁻¹(of all coefficients)is less than 0.05,the null hypothesis is rejected and hence Engine displacement, horsepower and vehicle weight are jointly statistically significant predictors of fuel efficiency.
+
+# Residual standard error.
+The standard error shows how much the estimated values of estimated differ or deviate from the true estimates.So the resudual is the difference between the actual or obeserved values and fitted values (y-hat) .therefore
+
+The residual standard error is 2.639 MPG, with 28 degrees of freedom.
+
+This indicates that the observed MPG values typically differ from the model's predicted values by approximately 2.639 MPG, measured on the response-variable scale.
+
+A smaller residual standard error generally indicates better  accurate prediction.
+
+```{r}
+library(ggplot2)
+
+# Generate predicted MPG values
+predicted_mpg <- predict(mult_linear_Line, newdata = mtcars)
+
+# Create a dataset containing actual and predicted values
+results <- data.frame(
+  Actual = mtcars$mpg,
+  Predicted = predicted_mpg
+)
+
+# Plot actual versus predicted values
+line_graph <- ggplot(results, aes(x = Actual, y = Predicted)) +
+  geom_point(colour = "blue", size = 2.5) +
+  geom_abline(intercept = 0, slope = 1,
+              colour = "red", linetype = "dashed") +
+  labs(
+    title = "Actual vs Predicted Fuel Efficiency",
+    x = "Actual MPG",
+    y = "Predicted MPG"
+  ) +
+  theme_minimal()
+
+line_graph
+```
+```{r}
+library(ggplot2)
+
+# Calculate fitted values
+mtcars$Fitted_MPG <- predict(mult_linear_Line, newdata = mtcars)
+
+# Sort observations by actual MPG for a smooth fitted line
+mtcars_sorted <- mtcars[order(mtcars$mpg), ]
+
+# Plot actual values and fitted values
+ggplot(mtcars_sorted, aes(x = mpg)) +
+
+  # Actual observed values
+  geom_point(aes(y = mpg),
+             colour = "blue", size = 2.5) +
+
+  # Fitted regression values
+  geom_line(aes(y = Fitted_MPG),
+          
+            colour = "red", linewidth = 1) +
+
+  labs(
+    title = "Actual vs Fitted Fuel Efficiency",
+    x = "Actual MPG",
+    y = "Fuel Efficiency (MPG)",
+    caption = "Blue points: Actual MPG | Red line: Fitted MPG"
+  ) +
+
+  theme_minimal()
+```
+```{r}
+library(ggplot2)
+d <- data.frame(x = 1:10)
+d$y <- d$x^2
+ggplot(d, aes(x, y)) + geom_line() + geom_point()
+d
+```
+# Ploting unsorted bar graph
+```{r}
+library(ggplot2)
+data_col<-data.frame(
+  team = c("Arsenal","Chelsea","Liverpool","Barcelona","Ma City","PSG","Inter"),
+  points = c(15,12,10,8,16,18,21)
+  )
+data_table <- data_col[order(desc(data_col$points)),]
+bar_graph <- ggplot(data_table,aes(points,team,width=0.65))+
+
+             geom_col(fill="steelblue")+
+  geom_text(aes(label= points),vjust = -0.4,hjust= -0.01)+
+       labs(title = "Champions league Standing Table",
+       x = "Points",
+       y= "Team")+
+theme_minimal()
+bar_graph
+
+```
+```{r}
+library(dplyr)
+data_table1 <-data_col%>%
+  arrange(desc(points))
+data_table
+```
+
+```
+
+
